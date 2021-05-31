@@ -2,6 +2,7 @@ var userFormEl = document.querySelector("#user-form");
 var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
+var languageButtonsEl = document.querySelector("#language-buttons");
 
 //User funtions
 var getUserRepos = function (user) 
@@ -10,7 +11,7 @@ var getUserRepos = function (user)
 
     fetch(apiUrl).then(function (responce) 
     {
-        if(responce.ok)
+        if (responce.ok)
         {
             responce.json().then(function (data) 
             {
@@ -22,12 +23,32 @@ var getUserRepos = function (user)
             alert("Error: GitHub User Not Found");
         }
     })
-    .catch(function(error)
+        .catch(function (error)
+        {
+            // Notice this `.catch()` getting chained onto the end of the `.then()` method
+            alert("Unable to connect to GitHub");
+        });
+};
+
+var getFeaturedRepos = function (language)
+{
+    var apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
+
+    fetch(apiUrl).then(function(responce)
     {
-        // Notice this `.catch()` getting chained onto the end of the `.then()` method
-        alert("Unable to connect to GitHub");  
+        if(responce.ok)
+        {
+            responce.json().then(function(data) 
+            {
+                displayRepos(data.items, language);
+            });
+        }
+        else
+        {
+            alert("Error: GitHub User Not Found")
+        }
     });
-}
+};
 
 var displayRepos = function (repos, searchTerm) 
 {
@@ -91,14 +112,27 @@ var formSubmitHandler = function (event)
     // get value from input element
     var username = nameInputEl.value.trim();
 
-    if (username) {
+    if (username)
+    {
         getUserRepos(username);
         nameInputEl.value = "";
     }
-    else {
+    else
+    {
         alert("Please enter a GitHub username");
+    }
+};
+
+var buttonClickHandler = function (event)
+{
+    var language = event.target.getAttribute("data-language");
+    if(language)
+    {
+        getFeaturedRepos(language);
+        repoContainerEl.textContent = "";
     }
 };
 
 //Event Listeners
 userFormEl.addEventListener("submit", formSubmitHandler);
+languageButtonsEl.addEventListener("click", buttonClickHandler);
